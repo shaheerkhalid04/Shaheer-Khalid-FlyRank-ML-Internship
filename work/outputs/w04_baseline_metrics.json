@@ -1,0 +1,27 @@
+{
+  "precision_at_10": 0.7,
+  "impression_recall_at_10": 0.006163,
+  "precision_at_50": 0.66,
+  "impression_recall_at_50": 0.017294,
+  "precision_at_100": 0.66,
+  "impression_recall_at_100": 0.025586,
+  "precision_at_200": 0.65,
+  "impression_recall_at_200": 0.0371,
+  "precision_at_500": 0.644,
+  "impression_recall_at_500": 0.061665,
+  "cutoff_date": "2026-03-31",
+  "development_month": "2026-03",
+  "label_window": "2026-04-01..2026-04-30",
+  "rule": "ctr_deficit_vs_position_peers * log1p(march_impressions)",
+  "pages_scored": 116082,
+  "clients": 44,
+  "base_rate": 0.5185,
+  "signal_1_ctr_vs_position": "CONFIRMED",
+  "signal_2_demand_volume": "OPPOSITE",
+  "action_mix": {
+    "REVIEW": 48240,
+    "PROTECT": 33371,
+    "REFRESH": 17862,
+    "MONITOR": 16609
+  }
+}
