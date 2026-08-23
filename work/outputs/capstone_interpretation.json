@@ -1,0 +1,181 @@
+{
+  "permutation_importance": [
+    {
+      "feature": "active_day_ratio",
+      "importance": 0.048947029769508446,
+      "std": 0.004314360055031293
+    },
+    {
+      "feature": "ctr",
+      "importance": 0.031648808796982085,
+      "std": 0.001922303082661376
+    },
+    {
+      "feature": "momentum",
+      "importance": 0.027479707258523334,
+      "std": 0.0025590415193883945
+    },
+    {
+      "feature": "position_delta",
+      "importance": 0.008776032022226144,
+      "std": 0.001955619286298113
+    },
+    {
+      "feature": "clk_m0",
+      "importance": 0.007702481394336669,
+      "std": 0.000553712822342053
+    },
+    {
+      "feature": "position_coverage",
+      "importance": 0.0060178226744653784,
+      "std": 0.0004283995452561083
+    },
+    {
+      "feature": "ctr_deficit",
+      "importance": 0.00461871347412759,
+      "std": 0.0007054185319629194
+    },
+    {
+      "feature": "log_imp_m0",
+      "importance": 0.0038917665662973723,
+      "std": 0.00011003299511937946
+    },
+    {
+      "feature": "imp_90d",
+      "importance": 0.0011053185762770479,
+      "std": 0.0008641036413970254
+    },
+    {
+      "feature": "momentum_prior",
+      "importance": -0.0003436418984016365,
+      "std": 0.0013501975376104733
+    },
+    {
+      "feature": "position",
+      "importance": -0.0035544746234363435,
+      "std": 0.0026822125023391835
+    }
+  ],
+  "queue_variants": [
+    {
+      "queue": "baseline rule",
+      "p@50": 0.78,
+      "p@200": 0.83,
+      "impression_recall@200": 0.042721005645321136,
+      "median_page_size@200": 28658.0
+    },
+    {
+      "queue": "model probability",
+      "p@50": 0.84,
+      "p@200": 0.805,
+      "impression_recall@200": 0.0008968444738720199,
+      "median_page_size@200": 186.0
+    },
+    {
+      "queue": "model x log(demand)",
+      "p@50": 0.78,
+      "p@200": 0.825,
+      "impression_recall@200": 0.026590709046852668,
+      "median_page_size@200": 14942.5
+    }
+  ],
+  "calibration": [
+    {
+      "decile": 0,
+      "n": 13372,
+      "predicted": 0.14639549701704302,
+      "actual": 0.40158540233323364,
+      "median_imp": 889.0
+    },
+    {
+      "decile": 1,
+      "n": 13372,
+      "predicted": 0.25403883531624405,
+      "actual": 0.6078372719114568,
+      "median_imp": 725.0
+    },
+    {
+      "decile": 2,
+      "n": 13372,
+      "predicted": 0.3146311211100584,
+      "actual": 0.6442566556984745,
+      "median_imp": 396.0
+    },
+    {
+      "decile": 3,
+      "n": 13372,
+      "predicted": 0.36336689575388903,
+      "actual": 0.6624289560275202,
+      "median_imp": 293.0
+    },
+    {
+      "decile": 4,
+      "n": 13372,
+      "predicted": 0.4037248423963556,
+      "actual": 0.6644481005085253,
+      "median_imp": 300.0
+    },
+    {
+      "decile": 5,
+      "n": 13371,
+      "predicted": 0.4402914777821993,
+      "actual": 0.6790068057736893,
+      "median_imp": 302.0
+    },
+    {
+      "decile": 6,
+      "n": 13372,
+      "predicted": 0.4743976982816473,
+      "actual": 0.6875560873466946,
+      "median_imp": 344.0
+    },
+    {
+      "decile": 7,
+      "n": 13372,
+      "predicted": 0.5094587859051165,
+      "actual": 0.6966796290756805,
+      "median_imp": 404.5
+    },
+    {
+      "decile": 8,
+      "n": 13401,
+      "predicted": 0.5496198644284758,
+      "actual": 0.7116633087083053,
+      "median_imp": 451.0
+    },
+    {
+      "decile": 9,
+      "n": 13343,
+      "predicted": 0.6393759882979679,
+      "actual": 0.7333433260885858,
+      "median_imp": 292.0
+    }
+  ],
+  "base_rate_drift": [
+    {
+      "cutoff": "2026-01",
+      "base_rate": 0.2118582499192767,
+      "n": 74328
+    },
+    {
+      "cutoff": "2026-02",
+      "base_rate": 0.2764110449099878,
+      "n": 93654
+    },
+    {
+      "cutoff": "2026-03",
+      "base_rate": 0.4983895137537248,
+      "n": 116114
+    },
+    {
+      "cutoff": "2026-04",
+      "base_rate": 0.5503586252962038,
+      "n": 125758
+    },
+    {
+      "cutoff": "2026-05",
+      "base_rate": 0.6488756272481846,
+      "n": 133719
+    }
+  ]
+}

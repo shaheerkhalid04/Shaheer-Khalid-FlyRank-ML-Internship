@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Can a model predict which pages will lose search demand next month?</title>
+<meta name="description" content="A ranked review queue for content editors, built on 1.3M page-months of real search performance and tested on a sealed future month. The transparent rule wins.">
+<meta name="author" content="Shaheer Khalid">
+<style>
+  :root{
+    --bg:#fbfaf8; --surface:#ffffff; --ink:#1c2530; --ink-soft:#4a5666; --ink-faint:#7a8798;
+    --line:#e3e0da; --accent:#c2410c; --accent-soft:#fdf1eb; --teal:#0f766e;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --bg:#14181d; --surface:#1a1f26; --ink:#e8eaed; --ink-soft:#b3bcc8; --ink-faint:#8793a2;
+      --line:#2b323b; --accent:#fb923c; --accent-soft:#2a1d15; --teal:#5eead4;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#14181d; --surface:#1a1f26; --ink:#e8eaed; --ink-soft:#b3bcc8; --ink-faint:#8793a2;
+    --line:#2b323b; --accent:#fb923c; --accent-soft:#2a1d15; --teal:#5eead4;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:var(--sans); font-size:17px; line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px; margin:0 auto; padding:0 22px 96px}
+  header.masthead{padding:64px 0 30px; border-bottom:1px solid var(--line); margin-bottom:38px}
+  .eyebrow{
+    font-size:12px; letter-spacing:.13em; text-transform:uppercase;
+    color:var(--accent); font-weight:650; margin-bottom:16px;
+  }
+  h1{
+    font-family:var(--serif); font-weight:600; font-size:clamp(30px,5.2vw,44px);
+    line-height:1.18; letter-spacing:-.015em; margin:0 0 20px;
+  }
+  .byline{color:var(--ink-faint); font-size:14.5px}
+  .byline a{color:var(--ink-soft)}
+  h2{
+    font-family:var(--serif); font-size:26px; font-weight:600; letter-spacing:-.01em;
+    margin:56px 0 14px; padding-top:10px;
+  }
+  h3{font-size:17.5px; font-weight:650; margin:32px 0 10px; color:var(--ink)}
+  p{margin:0 0 17px; color:var(--ink-soft)}
+  strong{color:var(--ink); font-weight:640}
+  a{color:var(--accent); text-decoration-thickness:1px; text-underline-offset:2px}
+  ul,ol{margin:0 0 17px; padding-left:22px; color:var(--ink-soft)}
+  li{margin-bottom:8px}
+  code{
+    font-family:var(--mono); font-size:.87em; background:var(--accent-soft);
+    color:var(--ink); padding:1px 5px; border-radius:4px;
+  }
+  pre{
+    background:var(--surface); border:1px solid var(--line); border-radius:9px;
+    padding:15px 17px; overflow-x:auto; font-family:var(--mono);
+    font-size:13.5px; line-height:1.6; color:var(--ink); margin:0 0 20px;
+  }
+  pre code{background:none; padding:0}
+  .abstract{
+    background:var(--surface); border:1px solid var(--line);
+    border-left:3px solid var(--accent); border-radius:9px; padding:22px 24px; margin:0 0 12px;
+  }
+  .abstract p:last-child{margin-bottom:0}
+  .abstract .lbl{
+    font-size:11.5px; letter-spacing:.13em; text-transform:uppercase;
+    color:var(--accent); font-weight:650; margin-bottom:9px;
+  }
+  .finding{
+    background:var(--accent-soft); border:1px solid var(--line); border-radius:9px;
+    padding:18px 22px; margin:26px 0; font-size:16.5px;
+  }
+  .finding p:last-child{margin-bottom:0}
+  .tablewrap{overflow-x:auto; margin:0 0 10px; -webkit-overflow-scrolling:touch}
+  table{border-collapse:collapse; width:100%; font-size:14.5px; min-width:480px}
+  th,td{padding:9px 12px; text-align:right; border-bottom:1px solid var(--line)}
+  th:first-child,td:first-child{text-align:left}
+  thead th{
+    font-size:11.5px; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--ink-faint); font-weight:650; border-bottom:1.5px solid var(--line);
+  }
+  tbody tr.win td{background:var(--accent-soft)}
+  td.num{font-family:var(--mono); font-size:13.5px}
+  figure{margin:30px 0}
+  figure img{width:100%; height:auto; display:block; border-radius:8px; background:#fff}
+  figcaption{
+    font-size:14px; color:var(--ink-faint); margin-top:11px;
+    padding-left:13px; border-left:2px solid var(--line);
+  }
+  .caption-lead{color:var(--ink); font-weight:600}
+  .meta-grid{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:1px; background:var(--line); border:1px solid var(--line);
+    border-radius:9px; overflow:hidden; margin:0 0 22px;
+  }
+  .meta-grid div{background:var(--surface); padding:14px 16px}
+  .meta-grid dt{
+    font-size:11.5px; letter-spacing:.07em; text-transform:uppercase;
+    color:var(--ink-faint); font-weight:650; margin-bottom:5px;
+  }
+  .meta-grid dd{margin:0; font-size:19px; font-weight:640; color:var(--ink); font-family:var(--mono)}
+  .meta-grid dd small{font-size:12.5px; font-weight:400; color:var(--ink-faint); font-family:var(--sans)}
+  .rec{border-left:2px solid var(--line); padding:2px 0 2px 18px; margin:0 0 24px}
+  .rec h3{margin-top:0}
+  .rec .tag{
+    display:inline-block; font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+    font-weight:700; color:var(--accent); margin-bottom:6px;
+  }
+  footer{
+    margin-top:60px; padding-top:26px; border-top:1px solid var(--line);
+    font-size:14.5px; color:var(--ink-faint);
+  }
+  .toc{
+    background:var(--surface); border:1px solid var(--line); border-radius:9px;
+    padding:16px 20px; margin:0 0 34px; font-size:14.5px;
+  }
+  .toc ol{margin:0; padding-left:20px; columns:2; column-gap:26px}
+  .toc li{margin-bottom:5px}
+  .toc a{color:var(--ink-soft); text-decoration:none}
+  .toc a:hover{color:var(--accent); text-decoration:underline}
+  @media (max-width:600px){
+    body{font-size:16px}
+    header.masthead{padding-top:44px}
+    .toc ol{columns:1}
+    h2{margin-top:44px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <div class="eyebrow">Search intelligence &middot; Applied ML</div>
+  <h1>Can a model predict which pages will lose search demand next month?</h1>
+  <p class="byline">
+    Shaheer Khalid &middot; FlyRank ML Internship capstone &middot; Lane 2, refresh and content opportunity scoring<br>
+    <a href="https://github.com/shaheerkhalid04/Shaheer-Khalid-FlyRank-ML-Internship">Repository and notebooks</a>
+  </p>
+</header>
+
+<nav class="toc" aria-label="Contents">
+  <ol>
+    <li><a href="#abstract">Abstract</a></li>
+    <li><a href="#problem">Problem</a></li>
+    <li><a href="#data">Data</a></li>
+    <li><a href="#method">Methodology</a></li>
+    <li><a href="#results">Results</a></li>
+    <li><a href="#limits">Limitations</a></li>
+    <li><a href="#recs">Recommendations</a></li>
+    <li><a href="#repro">Reproducibility</a></li>
+    <li><a href="#credit">Data credit</a></li>
+  </ol>
+</nav>
+
+<section id="abstract">
+<h2>Abstract</h2>
+<div class="abstract">
+  <div class="lbl">Five sentences</div>
+  <p>A small content team can review perhaps fifty pages a week, so the question is not which
+  pages are declining but which to open first. I built a page-level ranking task on 1.3 million
+  page-months of pseudonymised daily search performance, predicting whether a page's daily search
+  demand falls more than 20% in the month after a cutoff date, with features drawn strictly from
+  the months before it. A transparent rule and two learned models were compared on identical
+  splits: five time-ordered cutoffs, grouped cross-validation by client, and a final sealed month
+  never touched during development. On that sealed month the gradient-boosted model was
+  indistinguishable from a two-line rule on ranking quality (AUC 0.593 against 0.591) and far
+  worse on the metric an editor would actually feel, capturing <strong>0.09% of at-risk
+  impressions in its top 200 against the rule's 4.27%</strong>, because it filled the queue with
+  pages averaging 186 monthly impressions instead of 28,658. The honest recommendation is to ship
+  the rule, keep the model as a monitoring signal only, and treat the result as decision support
+  for editor triage rather than evidence about how search engines behave.</p>
+</div>
+</section>
+
+<section id="problem">
+<h2>1. The decision this supports</h2>
+
+<p>A content editor at a small agency opens their queue on Monday morning. They have maybe six
+hours of review time and a library of tens of thousands of pages. The useful question is not
+"which pages are in decline" - on the slice I studied, roughly <strong>65% of pages with
+real demand were losing ground</strong> in the test month, so a flag that answers that question
+lights up two-thirds of the library and helps nobody.</p>
+
+<p>The useful question is ordering: <em>which page do I open first?</em> That makes this a
+ranking problem evaluated at a fixed queue depth, not a classification problem evaluated on
+accuracy. The output is a ranked list where each row carries a score, one reason code, and an
+action label, so that a person can read why a page is there and disagree with it.</p>
+
+<p>The cost of being wrong runs in two directions. A false positive burns an editor's hour on a
+page that was fine, and may disturb a page that needed no help. A false negative leaves a page
+with real audience demand quietly bleeding traffic while nobody looks. Because capacity is the
+binding constraint, the expensive error is putting the wrong pages at the <em>top</em>, which is
+why every number in this paper is reported at a queue depth K rather than as an overall accuracy.</p>
+</section>
+
+<section id="data">
+<h2>2. Data</h2>
+
+<p>All work uses the pseudonymised FlyRank internship warehouse release (build v20260703), read
+directly from its hosted Parquet files with DuckDB. No raw export was downloaded, and nothing
+client-identifying appears anywhere in this project: clients and pages exist only as opaque hash
+identifiers, and no domains, URLs, or search queries are shown.</p>
+
+<div class="meta-grid">
+  <div><dt>Panel scanned</dt><dd>1,302,189 <small>page-months</small></dd></div>
+  <div><dt>Modelling rows</dt><dd>543,573 <small>page-cutoffs</small></dd></div>
+  <div><dt>Window</dt><dd>Nov 2025 <small>- Jun 2026</small></dd></div>
+  <div><dt>Sealed test</dt><dd>133,719 <small>pages, June</small></dd></div>
+</div>
+
+<h3>Tables used</h3>
+<ul>
+  <li><code>fact_content_daily_performance</code> - the only source of every number in the
+  model. It carries a <code>report_date</code>, so I can prove <em>when</em> each value was true.</li>
+  <li><code>dim_clients</code> - history coverage, used to size the panel limitation.</li>
+</ul>
+
+<h3>What I excluded, and why</h3>
+<p>Three deliberate exclusions, each of which cost me something I wanted:</p>
+<ul>
+  <li><strong>Every date column in <code>dim_content</code>.</strong> I had planned to use "days
+  since last optimised" as a feature - it was the strongest single signal in my earlier
+  exploratory work. It is unusable. The column has 45,396 non-null values and the
+  <em>earliest</em> is 2026-04-24, after every cutoff I model. <code>dim_content</code> is a
+  current-state dimension describing pages as of the July 2026 export, with no history at all;
+  <code>content_updated_date</code> is future-dated on 382,739 rows for the same reason. The rule
+  I adopted: a dimension column is usable only if it cannot change after the page is created.</li>
+  <li><strong><code>fact_content_query_90d</code>.</strong> Its fixed 90-day window overlaps the
+  label period, so its impression columns contain part of the answer.</li>
+  <li><strong>All product flags and existing system scores.</strong> Learning from a decision
+  someone already made teaches you the old rule, not the world.</li>
+</ul>
+
+<h3>One data-quality trap worth naming</h3>
+<p>In the daily table, <code>gsc_avg_position = 0</code> means "no position recorded", not rank
+zero - 163,189 rows in a single month carry it while still reporting impressions. Averaging
+position naively drags those pages toward zero, which places them in the best ranking band and
+hands them the most generous peer benchmark. In my first pass this put pages at an impossible
+"position 0.12" at the very top of the queue. Position is therefore computed only across days
+that actually carry one.</p>
+</section>
+
+<section id="method">
+<h2>3. Methodology</h2>
+
+<h3>Unit of analysis and label</h3>
+<p>One row is one page observed at one cutoff date. The label is measured, not defined by anyone's
+threshold column:</p>
+<pre><code>eligible : impressions in the cutoff month >= 50
+label    : y = 1 if mean daily impressions in the NEXT month
+               < 0.8 x mean daily impressions in the cutoff month
+features : computed only from the cutoff month and the two before it</code></pre>
+
+<p>Impressions are normalised <strong>per day</strong> rather than per month. Calendar months
+differ in length, and an unnormalised month-over-month ratio partly measures February being three
+days short rather than demand actually falling. The normalised and raw labels agree on 97.2% of
+rows, so this choice tightens the definition without driving the findings.</p>
+
+<h3>Features</h3>
+<p>Eleven features, all from the dated fact table: demand level and its logarithm, 90-day demand,
+month-over-month momentum and the prior month's momentum, click-through rate, clicks, average
+position, position coverage, position movement, the share of days the page had any impressions,
+and click-through deficit against other pages in the same position band.</p>
+
+<h3>Baseline</h3>
+<p>The comparison is a transparent rule frozen before any modelling began. It has two inputs and
+no fitted weights:</p>
+<pre><code>peer_ctr    = aggregate click-through of all pages in this page's position band
+ctr_deficit = (peer_ctr - page ctr) / peer_ctr,  clipped to [0, 1]
+score       = ctr_deficit  x  log(1 + monthly impressions)</code></pre>
+<p>The logarithm is deliberate. Raw demand is <em>negatively</em> associated with decline in this
+panel - the largest pages are the most stable - so multiplying by raw impressions
+makes the score mostly a volume ranking and degrades it. Damping demand keeps the queue
+commercially relevant without letting size dominate.</p>
+
+<h3>Validation design</h3>
+<p>Three separate defences, because each catches something different:</p>
+<ul>
+  <li><strong>Grouped cross-validation</strong> (5 folds by client). Pages from one client share a
+  template, an author and a site; a random split lets a model recognise the client rather than
+  learn the pattern.</li>
+  <li><strong>Time-ordered split.</strong> Train on cutoffs Jan to Mar 2026, validate on April,
+  and hold June entirely aside. This mimics deployment, where you always predict forward.</li>
+  <li><strong>A sealed final month.</strong> The June label month was scored once, at the end.</li>
+</ul>
+
+<h3>Leakage checks</h3>
+<p>Every claim below survived four probes:</p>
+<ul>
+  <li><strong>Deliberate leak.</strong> Adding next-month impressions as a feature drove AUC to
+  <strong>0.9997</strong> against an honest 0.5925. The harness detects leakage, so its silence
+  elsewhere is informative.</li>
+  <li><strong>Memorisation gap.</strong> A random split scored AUC 0.7202 where a grouped split
+  scored 0.6488. That 7-point gap <em>is</em> client memorisation, and it is the reason no random
+  split appears in the results.</li>
+  <li><strong>Window audit.</strong> Features end at the cutoff, labels begin the day after; the
+  peer benchmark is computed inside the cutoff month only, never across the panel.</li>
+  <li><strong>Population audit.</strong> Eligibility depends only on cutoff-month demand, never on
+  anything from the outcome window.</li>
+</ul>
+</section>
+
+<section id="results">
+<h2>4. Results</h2>
+
+<p>Two results, and they point in different directions. Within the training period, under grouped
+cross-validation, the gradient-boosted model clearly beat the rule. On a sealed future month, it
+did not.</p>
+
+<h3>Grouped cross-validation, training cutoffs</h3>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Method</th><th>AUC</th><th>P@200</th><th>Lift</th></tr></thead>
+  <tbody>
+    <tr class="win"><td>Gradient boosting</td><td class="num">0.649</td><td class="num">0.700</td><td class="num">2.00&times;</td></tr>
+    <tr><td>Transparent rule</td><td class="num">0.578</td><td class="num">0.625</td><td class="num">1.79&times;</td></tr>
+    <tr><td>Logistic regression</td><td class="num">0.570</td><td class="num">0.535</td><td class="num">1.53&times;</td></tr>
+  </tbody>
+</table>
+</div>
+<p style="font-size:14px;color:var(--ink-faint)">Base rate 0.350, n = 284,096. On this evidence
+alone I would have shipped the model.</p>
+
+<h3>Sealed test: June 2026, scored once</h3>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Queue</th><th>AUC</th><th>P@50</th><th>P@200</th><th>At-risk impressions caught</th><th>Median page size</th></tr></thead>
+  <tbody>
+    <tr class="win"><td>Transparent rule</td><td class="num">0.591</td><td class="num">0.780</td><td class="num">0.830</td><td class="num">4.27%</td><td class="num">28,658</td></tr>
+    <tr><td>Gradient boosting</td><td class="num">0.593</td><td class="num">0.840</td><td class="num">0.805</td><td class="num">0.09%</td><td class="num">186</td></tr>
+    <tr><td>Model &times; log(demand)</td><td class="num">-</td><td class="num">0.780</td><td class="num">0.825</td><td class="num">2.66%</td><td class="num">14,942</td></tr>
+    <tr><td>Logistic regression</td><td class="num">0.595</td><td class="num">0.560</td><td class="num">0.670</td><td class="num">5.70%</td><td class="num">-</td></tr>
+  </tbody>
+</table>
+</div>
+<p style="font-size:14px;color:var(--ink-faint)">Base rate 0.649, n = 133,719.</p>
+
+<div class="finding">
+<p><strong>The finding.</strong> All three AUCs sit between 0.591 and 0.595 - on a sealed
+future month, the model and the two-line rule are statistically indistinguishable at ranking. The
+model edges the rule at the very top of the queue (P@50 of 0.840 against 0.780) and loses slightly
+deeper down. But the columns that decide this are the last two: the model's top 200 protects
+<strong>0.09% of at-risk impressions</strong> where the rule protects <strong>4.27%</strong>,
+roughly <strong>47&times; less</strong>, because it fills the queue with pages that get about 186
+impressions a month.</p>
+</div>
+
+<p>That is the whole result in one sentence: the model optimised the metric it was given, which
+counted pages, and pages are not equal. A queue of 200 near-invisible pages can score well on
+precision and protect almost no traffic. Multiplying the model's probability by log demand
+recovers most of the business value (2.66%) but then performs no better than the rule it was
+supposed to replace.</p>
+
+<figure>
+  <img src="img/precision_at_k.svg" alt="Precision at K for the rule and the model on the sealed June test, both well above the base rate but close to each other across queue depths from 20 to 1000.">
+  <figcaption><span class="caption-lead">The two curves never separate.</span> Both beat random
+  picking comfortably, but the model's advantage at small K reverses by K = 200 and the lines stay
+  within a few points of each other throughout.</figcaption>
+</figure>
+
+<figure>
+  <img src="img/impression_recall.svg" alt="Bar chart comparing the share of at-risk impressions captured in the top 200: the transparent rule 4.27 percent, model times log demand 2.66 percent, and model probability 0.09 percent.">
+  <figcaption><span class="caption-lead">The gap that matters is not accuracy.</span> Same task,
+  same split, nearly the same precision - and a 47-fold difference in how much endangered
+  traffic the queue actually puts in front of an editor.</figcaption>
+</figure>
+
+<h3>What the model learned</h3>
+<figure>
+  <img src="img/importance.svg" alt="Permutation importance on the sealed test: active-day ratio highest at 0.049, then click-through rate 0.032, momentum 0.028, position movement 0.009, with average position slightly negative.">
+  <figcaption><span class="caption-lead">Consistency beats rank.</span> The strongest feature is
+  the share of days a page had any impressions at all. Average position contributes nothing
+  measurable - its importance is slightly negative, meaning shuffling it did not hurt.</figcaption>
+</figure>
+
+<p>The model's leading signal is one the rule does not use: how many days of the month a page was
+visible at all. I tried to fold that discovery back into the rule and <strong>failed</strong>.
+Decline rate across active-day bands runs 20.3%, 44.8%, 30.2%, 39.1% - not monotone, so
+there is no threshold to write. Whatever the model is using, it is an interaction rather than a
+readable cut point. That is a negative result, and it is the honest reason the rule was not
+improved.</p>
+
+<h3>The model is badly calibrated under drift</h3>
+<p>Predicted probabilities do not match observed rates on the sealed month. In the lowest decile
+the model predicted 0.146 and reality delivered 0.402; in the highest it predicted 0.639 against
+0.733. It was trained on months where 35% of pages declined and tested on one where 65% did, and
+it never adjusted. Any deployment would need recalibration on recent data, and the ranking -
+not the probability - is the only output worth trusting.</p>
+
+<figure>
+  <img src="img/base_rate_drift.svg" alt="Line chart of decline base rate across five cutoff months rising from 0.21 in January to 0.65 in May 2026.">
+  <figcaption><span class="caption-lead">The target itself moves.</span> The share of pages losing
+  demand triples across five months as the panel shifts from rapid growth to contraction. A model
+  trained on the left of this chart is answering a different question by the right of it.</figcaption>
+</figure>
+</section>
+
+<section id="limits">
+<h2>5. Limitations and honest framing</h2>
+
+<p>What follows is what this work <em>cannot</em> say, written before a reader has to ask.</p>
+
+<ul>
+  <li><strong>This is observational, not causal.</strong> Nothing here shows that refreshing a
+  page recovers its traffic. No intervention was made and no experiment was run. The output ranks
+  pages for human attention; it does not promise an outcome.</li>
+  <li><strong>Nothing here describes how search engines work.</strong> These are outcomes measured
+  in one pseudonymised portfolio over eight months. Any pattern may be a property of this
+  portfolio, this period, or how these particular sites are built.</li>
+  <li><strong>The panel is unbalanced and the sample is selective.</strong> Of 104 clients, only 24
+  have six or more months of history at my main cutoff and 37 have no recorded start date. Results
+  describe well-instrumented clients with running search analytics, not a site three weeks into
+  onboarding.</li>
+  <li><strong>The base rate is not stable.</strong> It moves from 0.21 to 0.65 across five cutoffs.
+  Precision at K is therefore not comparable across months, which is why lift over the contemporary
+  base rate is reported alongside it everywhere.</li>
+  <li><strong>A 30-day horizon cannot separate a page going bad from a topic going quiet.</strong>
+  Seasonality is not modelled. A page past its seasonal peak looks identical to a page in trouble.</li>
+  <li><strong>Absence is not zero.</strong> The daily table only accrues from a page's registration
+  day, so a page with no early rows was not being watched rather than earning nothing. This biases
+  90-day demand downward for newer pages.</li>
+  <li><strong>One sealed month is one observation.</strong> June 2026 was scored once, which is the
+  right discipline, but a single month cannot tell me whether the rule's advantage is durable or a
+  property of that particular month's contraction.</li>
+</ul>
+
+<p>The strongest claim the evidence carries: <em>on GSC-instrumented clients between November 2025
+and June 2026, a two-input transparent rule ranked pages for editorial review about as accurately
+as a gradient-boosted model, and substantially better by protected traffic.</em> That is a
+statement about a portfolio and a period, offered as decision support.</p>
+</section>
+
+<section id="recs">
+<h2>6. Ranked recommendations</h2>
+
+<div class="rec">
+  <span class="tag">Do first</span>
+  <h3>1. Ship the rule, not the model</h3>
+  <p>The rule matches the model's ranking quality on unseen future data, protects 47&times; more
+  at-risk traffic, and an editor can read it in one line. It has no training pipeline, cannot drift
+  silently, and needs no recalibration. Where two options perform the same, the one a person can
+  argue with is the better product.</p>
+</div>
+
+<div class="rec">
+  <span class="tag">Do first</span>
+  <h3>2. Change the objective before training anything else</h3>
+  <p>The model was not broken; it was pointed at the wrong target. Counting pages made a queue of
+  186-impression pages look excellent. Any future model should be selected on
+  impression-weighted recall at K, so that being right about a page nobody visits counts for what
+  it is worth.</p>
+</div>
+
+<div class="rec">
+  <span class="tag">Next</span>
+  <h3>3. Surface position coverage in the queue</h3>
+  <p>Pages where most impressions carry no ranking position decline at 67.8% against 47.1% for
+  fully-measured pages. They belong in the queue - filtering them lowers precision -
+  but the reason code shown to the editor should say the position data is thin, not that the title
+  is underperforming. A reason an editor cannot trust is worse than no reason.</p>
+</div>
+
+<div class="rec">
+  <span class="tag">Next</span>
+  <h3>4. Treat six-figure impressions with single-digit clicks as a separate queue</h3>
+  <p>These dominate the top of the rule's ranking and they are rarely a title problem. They look
+  much more like pages ranking for queries that were never going to click. They need a query-mix
+  diagnosis, not a rewrite, and sending an editor to "fix the title" on them is how a queue loses
+  its audience.</p>
+</div>
+
+<div class="rec">
+  <span class="tag">Later</span>
+  <h3>5. Recalibrate monthly, and watch the base rate as a health metric</h3>
+  <p>The panel moved from 21% to 65% decline in five months. That drift is itself the most
+  actionable signal in this project: it says something changed portfolio-wide, which no per-page
+  queue will ever surface.</p>
+</div>
+</section>
+
+<section id="repro">
+<h2>7. Reproducibility</h2>
+
+<p>Everything is in the <a href="https://github.com/shaheerkhalid04/Shaheer-Khalid-FlyRank-ML-Internship">public
+repository</a>. The weekly notebooks build to this result in order:</p>
+
+<ul>
+  <li><a href="https://github.com/shaheerkhalid04/Shaheer-Khalid-FlyRank-ML-Internship/blob/main/work/notebooks/w01_research_question.ipynb">w01</a> - research question and lane choice</li>
+  <li><a href="https://github.com/shaheerkhalid04/Shaheer-Khalid-FlyRank-ML-Internship/blob/main/work/notebooks/w02_ml_task_framing.ipynb">w02</a> - framing the lane as a ranking task</li>
+  <li><a href="https://github.com/shaheerkhalid04/Shaheer-Khalid-FlyRank-ML-Internship/blob/main/work/notebooks/w03_data_contract.ipynb">w03</a> - data contract, verification queries, leakage demonstration</li>
+  <li><a href="https://github.com/shaheerkhalid04/Shaheer-Khalid-FlyRank-ML-Internship/blob/main/work/notebooks/w04_baseline_score.ipynb">w04</a> - signal checks and the frozen baseline rule</li>
+  <li><a href="https://github.com/shaheerkhalid04/Shaheer-Khalid-FlyRank-ML-Internship/blob/main/work/notebooks/capstone.ipynb">capstone</a> - panel build, models, sealed evaluation, charts</li>
+</ul>
+
+<p>Seeds are fixed at <code>42</code> throughout. Row order is sorted explicitly after every
+warehouse pull, because DuckDB scans partitions in parallel and does not guarantee ordering -
+two identical pulls otherwise produced two different AUCs. Environment: Python 3.12, duckdb 1.5.5,
+pandas 3.0.3, scikit-learn 1.9.0.</p>
+
+<p>To re-run from a clean clone: request access to the dataset, authenticate with a read token,
+then execute the capstone notebook top to bottom. The warehouse scan is roughly five minutes and
+caches locally; every later step reads the cache. Metric receipts are committed as
+<code>work/outputs/capstone_metrics.json</code> and
+<code>work/outputs/capstone_interpretation.json</code>.</p>
+</section>
+
+<section id="credit">
+<h2>8. Acknowledgments and data credit</h2>
+<p>Built on the FlyRank ML Internship dataset - <a href="https://flyrank.ai">flyrank.ai</a>.
+The warehouse release is real, pseudonymised search performance data, and the fact that it is real
+is what made the negative result in this paper worth reporting. Thanks to the FlyRank team for
+opening it up, and for a curriculum that put leakage hunting and honest validation ahead of
+scores.</p>
+</section>
+
+<footer>
+  <p>Shaheer Khalid &middot; 2026 &middot;
+  <a href="https://github.com/shaheerkhalid04/Shaheer-Khalid-FlyRank-ML-Internship">source and notebooks</a><br>
+  No client names, domains, URLs, or search queries appear in this work.</p>
+</footer>
+
+</div>
+</body>
+</html>

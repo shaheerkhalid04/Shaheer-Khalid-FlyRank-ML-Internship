@@ -1,0 +1,127 @@
+{
+  "grouped_cv_logistic_regression": {
+    "name": "logistic_regression (grouped CV, out-of-fold)",
+    "n": 284096,
+    "base_rate": 0.3502,
+    "roc_auc": 0.5697,
+    "avg_precision": 0.39,
+    "p@50": 0.46,
+    "p@100": 0.52,
+    "p@200": 0.535,
+    "p@500": 0.558,
+    "imp_recall@200": 0.0199,
+    "lift@200": 1.528
+  },
+  "grouped_cv_gradient_boosting": {
+    "name": "gradient_boosting (grouped CV, out-of-fold)",
+    "n": 284096,
+    "base_rate": 0.3502,
+    "roc_auc": 0.6488,
+    "avg_precision": 0.4773,
+    "p@50": 0.62,
+    "p@100": 0.67,
+    "p@200": 0.7,
+    "p@500": 0.692,
+    "imp_recall@200": 0.0019,
+    "lift@200": 1.999
+  },
+  "grouped_cv_baseline": {
+    "name": "baseline rule (grouped CV data)",
+    "n": 284096,
+    "base_rate": 0.3502,
+    "roc_auc": 0.5782,
+    "avg_precision": 0.4058,
+    "p@50": 0.64,
+    "p@100": 0.64,
+    "p@200": 0.625,
+    "p@500": 0.57,
+    "imp_recall@200": 0.0305,
+    "lift@200": 1.785
+  },
+  "validation 2026-04_baseline": {
+    "name": "baseline rule | validation 2026-04",
+    "n": 125758,
+    "base_rate": 0.5504,
+    "roc_auc": 0.5952,
+    "avg_precision": 0.635,
+    "p@50": 0.86,
+    "p@100": 0.77,
+    "p@200": 0.81,
+    "p@500": 0.782,
+    "imp_recall@200": 0.0383,
+    "lift@200": 1.472
+  },
+  "validation 2026-04_logistic_regression": {
+    "name": "logistic_regression | validation 2026-04",
+    "n": 125758,
+    "base_rate": 0.5504,
+    "roc_auc": 0.5897,
+    "avg_precision": 0.5921,
+    "p@50": 0.62,
+    "p@100": 0.62,
+    "p@200": 0.635,
+    "p@500": 0.584,
+    "imp_recall@200": 0.039,
+    "lift@200": 1.154
+  },
+  "validation 2026-04_gradient_boosting": {
+    "name": "gradient_boosting | validation 2026-04",
+    "n": 125758,
+    "base_rate": 0.5504,
+    "roc_auc": 0.6373,
+    "avg_precision": 0.6635,
+    "p@50": 0.88,
+    "p@100": 0.83,
+    "p@200": 0.79,
+    "p@500": 0.816,
+    "imp_recall@200": 0.0012,
+    "lift@200": 1.435
+  },
+  "SEALED TEST 2026-05 -> June_baseline": {
+    "name": "baseline rule | SEALED TEST 2026-05 -> June",
+    "n": 133719,
+    "base_rate": 0.6489,
+    "roc_auc": 0.5909,
+    "avg_precision": 0.7105,
+    "p@50": 0.78,
+    "p@100": 0.83,
+    "p@200": 0.83,
+    "p@500": 0.82,
+    "imp_recall@200": 0.0427,
+    "lift@200": 1.279
+  },
+  "SEALED TEST 2026-05 -> June_logistic_regression": {
+    "name": "logistic_regression | SEALED TEST 2026-05 -> June",
+    "n": 133719,
+    "base_rate": 0.6489,
+    "roc_auc": 0.5945,
+    "avg_precision": 0.6881,
+    "p@50": 0.56,
+    "p@100": 0.67,
+    "p@200": 0.67,
+    "p@500": 0.662,
+    "imp_recall@200": 0.057,
+    "lift@200": 1.033
+  },
+  "SEALED TEST 2026-05 -> June_gradient_boosting": {
+    "name": "gradient_boosting | SEALED TEST 2026-05 -> June",
+    "n": 133719,
+    "base_rate": 0.6489,
+    "roc_auc": 0.5925,
+    "avg_precision": 0.7083,
+    "p@50": 0.84,
+    "p@100": 0.84,
+    "p@200": 0.805,
+    "p@500": 0.822,
+    "imp_recall@200": 0.0009,
+    "lift@200": 1.241
+  },
+  "leak_probe": {
+    "leaked_auc": 0.9997,
+    "honest_auc": 0.5925
+  },
+  "split_gap": {
+    "random_auc": 0.7202,
+    "grouped_auc": 0.6488
+  }
+}
